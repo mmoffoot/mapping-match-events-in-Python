@@ -20,33 +20,33 @@ import scipy as sp
 from scipy import stats
 from scipy import optimize
 from scipy.integrate import quad
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 
 ACCURATE_PASS = 1801
-EVENT_TYPES = ['Duel', 'Foul',
+EVENT_TYPES = ['Duel', 'Foul', 
              'Offside', 'Shot']
 
-TOURNAMENTS=['Italy','England','Germany', 'France',
+TOURNAMENTS=['Italy','England','Germany', 'France', 
              'Spain', 'European_Championship','World_Cup']
 
 data_folder='data/'
-def load_public_dataset(data_folder=data_folder, tournament='England'):
+def load_public_dataset(data_folder=data_folder, tournament='Italy'):
     """
     Load the json files with the matches, events, players and competitions
-
+    
     Parameters
     ----------
     data_folder : str, optional
         the path to the folder where json files are stored. Default: 'data/'
-
+        
     tournaments : list, optional
-        the list of tournaments to load.
-
+        the list of tournaments to load. 
+        
     Returns
     -------
     tuple
         a tuple of four dictionaries, containing matches, events, players and competitions
-
+        
     """
     # loading the matches and events data
     matches, events = {}, {}
@@ -54,26 +54,26 @@ def load_public_dataset(data_folder=data_folder, tournament='England'):
         events = json.load(json_data)
     with open('./data/matches/matches_%s.json' %tournament) as json_data:
         matches = json.load(json_data)
-
+    
     match_id2events = defaultdict(list)
     match_id2match = defaultdict(dict)
     for event in events:
         match_id = event['matchId']
         match_id2events[match_id].append(event)
-
+                                         
     for match in matches:
         match_id = match['wyId']
         match_id2match[match_id] = match
-
+                                   
     # loading the players data
     with open('./data/players.json') as json_data:
         players = json.load(json_data)
-
+    
     player_id2player = defaultdict(dict)
     for player in players:
         player_id = player['wyId']
         player_id2player[player_id] = player
-
+    
     # loading the competitions data
     competitions={}
     with open('./data/competitions.json') as json_data:
@@ -82,7 +82,7 @@ def load_public_dataset(data_folder=data_folder, tournament='England'):
     for competition in competitions:
         competition_id = competition['wyId']
         competition_id2competition[competition_id] = competition
-
+    
     # loading the competitions data
     teams={}
     with open('./data/teams.json') as json_data:
@@ -91,43 +91,43 @@ def load_public_dataset(data_folder=data_folder, tournament='England'):
     for team in teams:
         team_id = team['wyId']
         team_id2team[team_id] = team
-
+    
     return match_id2match, match_id2events, player_id2player, competition_id2competition, team_id2team
 
 def get_weight(position):
     """
-    Get the probability of scoring a goal given the position of the field where
+    Get the probability of scoring a goal given the position of the field where 
     the event is generated.
-
+    
     Parameters
     ----------
     position: tuple
         the x,y coordinates of the event
     """
     x, y = position
-
+    
     # 0.01
     if x >= 65 and x <= 75:
         return 0.01
-
+    
     # 0.5
     if (x > 75 and x <= 85) and (y >= 15 and y <= 85):
         return 0.5
     if x > 85 and (y >= 15 and y <= 25) or (y >= 75 and y <= 85):
         return 0.5
-
+    
     # 0.02
     if x > 75 and (y <= 15 or y >= 85):
         return 0.02
-
+    
     # 1.0
     if x > 85 and (y >= 40 and y <= 60):
         return 1.0
-
+    
     # 0.8
     if x > 85 and (y >= 25 and y <= 40 or y >= 60 and y <= 85):
         return 0.8
-
+    
     return 0.0
 
 
@@ -162,7 +162,7 @@ def list_check(lista):
         return lista
     except IndexError:
         return lista[0]
-
+    
 
 def get_event_name(event):
     event_name = ''
@@ -174,9 +174,9 @@ def get_event_name(event):
     except TypeError:
         #print event
         pass
-
+    
     return event_name
-
+    
 def is_in_match(player_id, match):
     team_ids = list(match['teamsData'].keys())
     all_players = []
@@ -194,7 +194,7 @@ def data_download():
     https://figshare.com/collections/Soccer_match_event_dataset/4415000/2
     Data description available here:
     Please cite the source as:
-    Pappalardo, L., Cintia, P., Rossi, A. et al. A public data set of spatio-temporal match events in soccer competitions.
+    Pappalardo, L., Cintia, P., Rossi, A. et al. A public data set of spatio-temporal match events in soccer competitions. 
     Scientific Data 6, 236 (2019) doi:10.1038/s41597-019-0247-7, https://www.nature.com/articles/s41597-019-0247-7
     """
 
@@ -215,7 +215,7 @@ def data_download():
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall("data/matches")
 
-
+    
     print ("Downloading teams data")
     r = requests.get(dataset_links['teams'], stream=False)
     print (r.text, file=open('data/teams.json','w'))
@@ -224,14 +224,16 @@ def data_download():
     print ("Downloading players data")
     r = requests.get(dataset_links['players'], stream=False)
     print (r.text, file=open('data/players.json','w'))
-
+    
     print ("Downloading competitions data")
     r = requests.get(dataset_links['competitions'], stream=False)
     print (r.text, file=open('data/competitions.json','w'))
-
+    
     print ("Downloading events data")
     r = requests.get(dataset_links['events'], stream=True)
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall("data/events")
-
+    
     print ("Download completed")
+
+
